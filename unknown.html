@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNKNOWN - Card Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #d4c5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #gameContainer {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: linear-gradient(180deg, #c9a8e8 0%, #d4c5f9 100%);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* SCREEN STATES */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* MAIN MENU */
+        #mainMenu {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(180deg, #c9a8e8 0%, #d4c5f9 100%);
+        }
+
+        .menu-title {
+            font-size: 80px;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+            margin-bottom: 60px;
+            text-align: center;
+            transform: scaleY(1.2);
+            letter-spacing: 8px;
+        }
+
+        .menu-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 200px);
+            gap: 30px;
+            justify-items: center;
+        }
+
+        .menu-btn {
+            width: 200px;
+            height: 70px;
+            background: #e8e8e8;
+            border: 4px solid #000;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 0 rgba(0, 0, 0, 0.3);
+            background: #f5f5f5;
+        }
+
+        .menu-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* PLAY SCREEN */
+        #playScreen {
+            flex-direction: column;
+            background: linear-gradient(180deg, #c9a8e8 0%, #d4c5f9 100%);
+        }
+
+        .game-header {
+            padding: 20px;
+            text-align: center;
+            color: #000;
+            font-size: 28px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .game-board {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 40px;
+        }
+
+        .table {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #8b6f47 0%, #5c4a2e 100%);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset 0 20px 40px rgba(0, 0, 0, 0.5), 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .player-position {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .player-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .hearts-container {
+            display: flex;
+            gap: 5px;
+        }
+
+        .heart {
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            clip-path: polygon(50% 100%, 0% 61.8%, 11.8% 22.4%, 50% 0%, 88.2% 22.4%, 100% 61.8%);
+            transition: all 0.3s;
+        }
+
+        .heart.empty {
+            background: #ccc;
+        }
+
+        .card {
+            width: 70px;
+            height: 100px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .card.facedown {
+            background: #2c3e50;
+            border: 2px solid #1a252f;
+            color: #fff;
+        }
+
+        .card:hover:not(.facedown) {
+            transform: scale(1.1);
+        }
+
+        /* PLAYER POSITIONS */
+        .player-center {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .player-top {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .player-left-top {
+            top: 35%;
+            left: 20px;
+            transform: translateY(-50%);
+        }
+
+        .player-left-bottom {
+            bottom: 35%;
+            left: 20px;
+            transform: translateY(50%);
+        }
+
+        .player-right-top {
+            top: 35%;
+            right: 20px;
+            transform: translateY(-50%);
+        }
+
+        .player-right-bottom {
+            bottom: 35%;
+            right: 20px;
+            transform: translateY(50%);
+        }
+
+        /* ACTION BUTTONS */
+        .action-buttons {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .action-btn {
+            width: 140px;
+            height: 50px;
+            background: #e8e8e8;
+            border: 3px solid #000;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* SPEECH BUBBLE */
+        .speech-bubble {
+            position: absolute;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+            animation: bubbleAppear 0.3s ease-out;
+        }
+
+        @keyframes bubbleAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* SHAKE ANIMATION */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #e8e8e8;
+            border: 4px solid #000;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 20px;
+        }
+
+        .modal-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .modal-btn {
+            width: 150px;
+            height: 50px;
+            background: #4CAF50;
+            border: 3px solid #000;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        /* RULES SCREEN */
+        #rulesScreen {
+            flex-direction: column;
+            background: linear-gradient(180deg, #c9a8e8 0%, #d4c5f9 100%);
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .rules-container {
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #000;
+        }
+
+        .rules-title {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .rules-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .back-btn {
+            width: 150px;
+            height: 50px;
+            background: #e8e8e8;
+            border: 3px solid #000;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        /* SETTINGS SCREEN */
+        #settingsScreen {
+            flex-direction: column;
+            background: linear-gradient(180deg, #c9a8e8 0%, #d4c5f9 100%);
+            padding: 40px;
+            justify-content: center;
+        }
+
+        .settings-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #000;
+            max-width: 500px;
+        }
+
+        .setting-item {
+            margin-bottom: 30px;
+        }
+
+        .setting-label {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .setting-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .setting-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #000;
+            background: #e8e8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .setting-btn.active {
+            background: #4CAF50;
+            color: #fff;
+        }
+
+        .setting-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* SHOP SCREEN */
+        #shopScreen {
+            flex-direction: column;
+            background: linear-gradient(180deg, #c9a8e8 0%, #d4c5f9 100%);
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .shop-header {
+            text-align: center;
+            color: #000;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .xp-display {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #000;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .shop-item {
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .shop-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .shop-item-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .shop-item-cost {
+            color: #ff9800;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .shop-item-btn {
+            width: 100%;
+            padding: 8px;
+            background: #4CAF50;
+            color: #fff;
+            border: 2px solid #000;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .shop-item-btn.purchased {
+            background: #999;
+            cursor: default;
+        }
+
+        .shop-item-btn:hover:not(.purchased) {
+            background: #45a049;
+        }
+
+        /* STATS SCREEN */
+        #statsScreen {
+            flex-direction: column;
+            background: linear-gradient(180deg, #c9a8e8 0%, #d4c5f9 100%);
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .stats-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #000;
+            max-width: 500px;
+        }
+
+        .stats-title {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        .stat-label {
+            font-weight: bold;
+        }
+
+        .stat-value {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .menu-buttons {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .menu-btn {
+                width: 150px;
+                height: 60px;
+                font-size: 18px;
+            }
+
+            .menu-title {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="mainMenu" class="screen active">
+            <div class="menu-title">UNKNOWN</div>
+            <div class="menu-buttons">
+                <button class="menu-btn" onclick="startGame()">PLAY</button>
+                <button class="menu-btn" onclick="showScreen('rulesScreen')">RULES</button>
+                <button class="menu-btn" onclick="showScreen('shopScreen')">SHOP</button>
+                <button class="menu-btn" onclick="showScreen('settingsScreen')">SETTINGS</button>
+            </div>
+        </div>
+
+        <div id="playScreen" class="screen">
+            <div class="game-header" id="roundInfo">Round 1</div>
+            <div class="game-board">
+                <div class="table" id="gameTable"></div>
+                <div class="action-buttons" id="actionButtons"></div>
+            </div>
+        </div>
+
+        <div id="rulesScreen" class="screen">
+            <div class="rules-container" style="margin: 0 auto;">
+                <div class="rules-title">HOW TO PLAY</div>
+                <div class="rules-text"><strong>Goal:</strong> Be the last player standing!</div>
+                <div class="rules-text"><strong>Setup:</strong> Each player gets 1 hidden card. You start with 3 lives.</div>
+                <div class="rules-text"><strong>Trading:</strong> Choose to TRADE your card with the player on your left, or STAY with your card.</div>
+                <div class="rules-text"><strong>King Block:</strong> If your neighbor has a King, the trade is blocked!</div>
+                <div class="rules-text"><strong>Reveal:</strong> After all trades, cards are revealed.</div>
+                <div class="rules-text"><strong>Losing:</strong> The player with the lowest card loses 1 life.</div>
+                <div class="rules-text"><strong>Card Ranking:</strong> King > Queen > Jack > 10-2 > Ace</div>
+                <button class="back-btn" onclick="showScreen('mainMenu')">BACK</button>
+            </div>
+        </div>
+
+        <div id="settingsScreen" class="screen">
+            <div class="settings-container" style="margin: 0 auto;">
+                <div style="font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 30px;">SETTINGS</div>
+                <div class="setting-item">
+                    <div class="setting-label">Starting Lives</div>
+                    <div class="setting-options">
+                        <button class="setting-btn" onclick="setLives(1)">1</button>
+                        <button class="setting-btn" onclick="setLives(2)">2</button>
+                        <button class="setting-btn active" onclick="setLives(3)">3</button>
+                        <button class="setting-btn" onclick="setLives(4)">4</button>
+                        <button class="setting-btn" onclick="setLives(5)">5</button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">AI Voice</div>
+                    <div class="setting-options">
+                        <button class="setting-btn active" onclick="setVoice(true)">ON</button>
+                        <button class="setting-btn" onclick="setVoice(false)">OFF</button>
+                    </div>
+                </div>
+                <button class="back-btn" onclick="showScreen('mainMenu')">BACK</button>
+            </div>
+        </div>
+
+        <div id="shopScreen" class="screen">
+            <div class="shop-header">SHOP</div>
+            <div class="xp-display">XP: <span id="xpDisplay">0</span></div>
+            <div class="shop-grid" id="shopGrid"></div>
+            <button class="back-btn" style="margin: 0 auto;" onclick="showScreen('mainMenu')">BACK</button>
+        </div>
+
+        <div id="statsScreen" class="screen">
+            <div class="stats-container" style="margin: 0 auto;">
+                <div class="stats-title">STATISTICS</div>
+                <div class="stat-row">
+                    <span class="stat-label">Games Played:</span>
+                    <span class="stat-value" id="statGamesPlayed">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Games Won:</span>
+                    <span class="stat-value" id="statGamesWon">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Win %:</span>
+                    <span class="stat-value" id="statWinPercent">0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Trades Made:</span>
+                    <span class="stat-value" id="statTradesMade">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Trades Blocked:</span>
+                    <span class="stat-value" id="statTradesBlocked">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Kings Drawn:</span>
+                    <span class="stat-value" id="statKingsDrawn">0</span>
+                </div>
+                <button class="back-btn" onclick="showScreen('mainMenu')">BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Title</div>
+            <div class="modal-text" id="modalText">Text</div>
+            <button class="modal-btn" id="modalBtn" onclick="closeModal()">CONTINUE</button>
+        </div>
+    </div>
+
+    <script>
+        const gameState = {
+            currentScreen: 'mainMenu',
+            players: [],
+            round: 1,
+            startingLives: 3,
+            aiVoice: true,
+            gameActive: false,
+            xp: 0,
+            stats: {
+                gamesPlayed: 0,
+                gamesWon: 0,
+                tradesMade: 0,
+                tradesBlocked: 0,
+                kingsDrawn: 0,
+                roundsSurvived: 0
+            },
+            unlockedBackgrounds: ['standard'],
+            unlockedModes: ['standard']
+        };
+
+        const CARD_RANKS = ['Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King'];
+        const CARD_SUITS = ['♠', '♥', '♣', '♦'];
+        const RANK_VALUES = {
+            'King': 13, 'Queen': 12, 'Jack': 11, '10': 10, '9': 9, '8': 8, '7': 7,
+            '6': 6, '5': 5, '4': 4, '3': 3, '2': 2, 'Ace': 1
+        };
+        const SUIT_VALUES = { '♠': 4, '♥': 3, '♣': 2, '♦': 1 };
+
+        function createDeck() {
+            const deck = [];
+            for (let rank of CARD_RANKS) {
+                for (let suit of CARD_SUITS) {
+                    deck.push({ rank, suit });
+                }
+            }
+            return deck.sort(() => Math.random() - 0.5);
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            gameState.currentScreen = screenId;
+            if (screenId === 'shopScreen') updateShop();
+            if (screenId === 'statsScreen') updateStats();
+        }
+
+        function showModal(title, text, callback) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            document.getElementById('modal').classList.add('active');
+            window.modalCallback = callback;
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            if (window.modalCallback) window.modalCallback();
+        }
+
+        function initializePlayers() {
+            const deck = createDeck();
+            gameState.players = [
+                { name: 'You', type: 'player', lives: gameState.startingLives, card: null, traded: false, position: 'center' },
+                { name: 'Fred', type: 'ai', lives: gameState.startingLives, card: null, traded: false, position: 'top' },
+                { name: 'Sarah', type: 'ai', lives: gameState.startingLives, card: null, traded: false, position: 'left-top' },
+                { name: 'Mike', type: 'ai', lives: gameState.startingLives, card: null, traded: false, position: 'left-bottom' },
+                { name: 'Lisa', type: 'ai', lives: gameState.startingLives, card: null, traded: false, position: 'right-top' }
+            ];
+
+            gameState.players.forEach((p, i) => {
+                p.card = deck[i];
+                if (p.card.rank === 'King') gameState.stats.kingsDrawn++;
+            });
+        }
+
+        function getCardDisplay(card) {
+            if (!card) return '';
+            const color = (card.suit === '♠' || card.suit === '♣') ? '#000' : '#ff0000';
+            return `<div style="color: ${color}; font-size: 20px; font-weight: bold;">${card.rank}${card.suit}</div>`;
+        }
+
+        function compareCards(card1, card2) {
+            const rank1 = RANK_VALUES[card1.rank];
+            const rank2 = RANK_VALUES[card2.rank];
+            if (rank1 !== rank2) return rank1 > rank2 ? 1 : -1;
+            const suit1 = SUIT_VALUES[card1.suit];
+            const suit2 = SUIT_VALUES[card2.suit];
+            return suit1 > suit2 ? 1 : -1;
+        }
+
+        function getAIDecision(card) {
+            const rankValue = RANK_VALUES[card.rank];
+            const tradeChances = {
+                1: 95, 2: 90, 3: 85, 4: 80, 5: 75, 6: 65, 7: 55, 8: 45, 9: 35, 10: 25, 11: 15, 12: 10, 13: 0
+            };
+            const chance = tradeChances[rankValue];
+            return Math.random() * 100 < chance;
+        }
+
+        function getAILine() {
+            const lines = [
+                "I'll keep this one.",
+                "Let's take a chance.",
+                "Trade!",
+                "I like my odds.",
+                "No thanks.",
+                "Hmm...",
+                "Interesting."
+            ];
+            return lines[Math.floor(Math.random() * lines.length)];
+        }
+
+        function startGame() {
+            gameState.round = 1;
+            gameState.gameActive = true;
+            gameState.stats.gamesPlayed++;
+            initializePlayers();
+            showScreen('playScreen');
+            startRound();
+        }
+
+        function startRound() {
+            document.getElementById('roundInfo').textContent = `Round ${gameState.round}`;
+            renderGameBoard();
+            gameState.players.forEach(p => p.traded = false);
+            playPlayerTurn();
+        }
+
+        function playPlayerTurn() {
+            const buttons = document.getElementById('actionButtons');
+            buttons.innerHTML = `
+                <button class="action-btn" onclick="playerAction('stay')">STAY</button>
+                <button class="action-btn" onclick="playerAction('trade')">TRADE</button>
+            `;
+        }
+
+        function playerAction(action) {
+            const player = gameState.players[0];
+            player.traded = true;
+
+            if (action === 'trade') {
+                const leftPlayer = gameState.players[gameState.players.length - 1];
+                if (leftPlayer.card.rank === 'King') {
+                    document.getElementById('actionButtons').innerHTML = '';
+                    const table = document.getElementById('gameTable');
+                    table.classList.add('shake');
+                    setTimeout(() => table.classList.remove('shake'), 500);
+                    gameState.stats.tradesBlocked++;
+                    showModal('BLOCKED!', 'KING BLOCKED THE TRADE', () => playAITurns());
+                } else {
+                    const temp = player.card;
+                    player.card = leftPlayer.card;
+                    leftPlayer.card = temp;
+                    gameState.stats.tradesMade++;
+                    document.getElementById('actionButtons').innerHTML = '';
+                    showModal('TRADE!', 'You swapped cards!', () => playAITurns());
+                }
+            } else {
+                document.getElementById('actionButtons').innerHTML = '';
+                showModal('STAY!', 'You keep your card.', () => playAITurns());
+            }
+        }
+
+        function playAITurns() {
+            const aiPlayers = gameState.players.slice(1);
+            let currentAI = 0;
+
+            function playNextAI() {
+                if (currentAI >= aiPlayers.length) {
+                    revealCards();
+                    return;
+                }
+
+                const ai = aiPlayers[currentAI];
+                renderGameBoard();
+
+                setTimeout(() => {
+                    const decision = getAIDecision(ai.card);
+                    const line = getAILine();
+
+                    if (gameState.aiVoice) {
+                        showAISpeech(ai, line);
+                    }
+
+                    setTimeout(() => {
+                        if (decision) {
+                            const leftPlayer = gameState.players[(gameState.players.indexOf(ai) - 1 + gameState.players.length) % gameState.players.length];
+                            if (leftPlayer.card.rank === 'King') {
+                                gameState.stats.tradesBlocked++;
+                            } else {
+                                const temp = ai.card;
+                                ai.card = leftPlayer.card;
+                                leftPlayer.card = temp;
+                                gameState.stats.tradesMade++;
+                            }
+                        }
+                        ai.traded = true;
+                        currentAI++;
+                        playNextAI();
+                    }, 1500);
+                }, 500);
+            }
+
+            playNextAI();
+        }
+
+        function showAISpeech(player, text) {
+            const positions = {
+                'top': { top: '15%', left: '50%', transform: 'translateX(-50%)' },
+                'left-top': { top: '25%', left: '15%' },
+                'left-bottom': { bottom: '25%', left: '15%' },
+                'right-top': { top: '25%', right: '15%' }
+            };
+
+            const bubble = document.createElement('div');
+            bubble.className = 'speech-bubble';
+            bubble.textContent = text;
+            bubble.style.position = 'absolute';
+            bubble.style.zIndex = '50';
+            Object.assign(bubble.style, positions[player.position]);
+            document.getElementById('gameTable').appendChild(bubble);
+
+            setTimeout(() => bubble.remove(), 2000);
+        }
+
+        function revealCards() {
+            setTimeout(() => {
+                renderGameBoard();
+                setTimeout(() => {
+                    determineLoser();
+                }, 500);
+            }, 500);
+        }
+
+        function determineLoser() {
+            const loser = gameState.players.reduce((lowest, p) => {
+                if (p.lives === 0) return lowest;
+                if (lowest.lives === 0) return p;
+                return compareCards(p.card, lowest.card) < 0 ? p : lowest;
+            });
+
+            loser.lives--;
+            gameState.stats.roundsSurvived++;
+            renderGameBoard();
+
+            setTimeout(() => {
+                if (loser === gameState.players[0]) {
+                    showModal('💔 OUCH!', `You lost a life! ${loser.lives} left.`, checkGameEnd);
+                } else {
+                    showModal('😬 TOUGH LUCK', `${loser.name} lost a life!`, checkGameEnd);
+                }
+            }, 1000);
+        }
+
+        function checkGameEnd() {
+            const alive = gameState.players.filter(p => p.lives > 0);
+
+            if (alive.length === 1) {
+                endGame(alive[0]);
+            } else {
+                gameState.round++;
+                startRound();
+            }
+        }
+
+        function endGame(winner) {
+            gameState.gameActive = false;
+            if (winner.type === 'player') {
+                gameState.stats.gamesWon++;
+                gameState.xp += 100;
+                showModal('🎉 YOU WIN!', `Victory! +100 XP`, () => showScreen('mainMenu'));
+            } else {
+                gameState.xp += 20;
+                showModal('💀 YOU LOSE', `${winner.name} wins!`, () => showScreen('mainMenu'));
+            }
+            saveGame();
+        }
+
+        function renderGameBoard() {
+            const table = document.getElementById('gameTable');
+            const positions = ['center', 'top', 'left-top', 'left-bottom', 'right-top'];
+
+            table.innerHTML = gameState.players.map((p, i) => {
+                const pos = positions[i] || positions[i % positions.length];
+                return `
+                    <div class="player-position player-${pos}">
+                        <div class="player-name">${p.name}</div>
+                        <div class="hearts-container">
+                            ${Array(gameState.startingLives).fill(0).map((_, j) => 
+                                `<div class="heart ${j >= p.lives ? 'empty' : ''}""></div>`
+                            ).join('')}
+                        </div>
+                        <div class="card ${p.card && (p === gameState.players[0] || gameState.players[0].lives === 0) ? '' : 'facedown'}">
+                            ${p.card && (p === gameState.players[0] || gameState.players[0].lives === 0) ? getCardDisplay(p.card) : '?'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateShop() {
+            const shopGrid = document.getElementById('shopGrid');
+            const backgrounds = [
+                { id: 'grandmas', name: "Grandma's House", cost: 50 },
+                { id: 'school', name: 'School', cost: 75 },
+                { id: 'pals_deli', name: "Pal's Deli", cost: 100 },
+                { id: 'ship', name: 'Familiar Ship', cost: 150 }
+            ];
+
+            shopGrid.innerHTML = backgrounds.map(bg => {
+                const purchased = gameState.unlockedBackgrounds.includes(bg.id);
+                return `
+                    <div class="shop-item">
+                        <div class="shop-item-name">${bg.name}</div>
+                        <div class="shop-item-cost">${bg.cost} XP</div>
+                        <button class="shop-item-btn ${purchased ? 'purchased' : ''}" onclick="buyItem('${bg.id}', ${bg.cost})">
+                            ${purchased ? 'OWNED' : 'BUY'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('xpDisplay').textContent = gameState.xp;
+        }
+
+        function buyItem(itemId, cost) {
+            if (gameState.xp >= cost && !gameState.unlockedBackgrounds.includes(itemId)) {
+                gameState.xp -= cost;
+                gameState.unlockedBackgrounds.push(itemId);
+                saveGame();
+                updateShop();
+                showModal('SUCCESS', 'Item purchased!', () => {});
+            }
+        }
+
+        function setLives(lives) {
+            gameState.startingLives = lives;
+            document.querySelectorAll('.setting-options .setting-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === lives - 1);
+            });
+            saveGame();
+        }
+
+        function setVoice(enabled) {
+            gameState.aiVoice = enabled;
+            const buttons = document.querySelectorAll('.setting-item:nth-child(2) .setting-btn');
+            buttons[0].classList.toggle('active', enabled);
+            buttons[1].classList.toggle('active', !enabled);
+            saveGame();
+        }
+
+        function updateStats() {
+            document.getElementById('statGamesPlayed').textContent = gameState.stats.gamesPlayed;
+            document.getElementById('statGamesWon').textContent = gameState.stats.gamesWon;
+            const winPercent = gameState.stats.gamesPlayed > 0 ? Math.round((gameState.stats.gamesWon / gameState.stats.gamesPlayed) * 100) : 0;
+            document.getElementById('statWinPercent').textContent = winPercent + '%';
+            document.getElementById('statTradesMade').textContent = gameState.stats.tradesMade;
+            document.getElementById('statTradesBlocked').textContent = gameState.stats.tradesBlocked;
+            document.getElementById('statKingsDrawn').textContent = gameState.stats.kingsDrawn;
+        }
+
+        function saveGame() {
+            localStorage.setItem('unknownGameState', JSON.stringify(gameState));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('unknownGameState');
+            if (saved) {
+                Object.assign(gameState, JSON.parse(saved));
+            }
+        }
+
+        window.addEventListener('load', () => {
+            loadGame();
+        });
+    </script>
+</body>
+</html>
