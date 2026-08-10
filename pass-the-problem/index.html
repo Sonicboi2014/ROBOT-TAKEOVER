@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pass The Problem - Card Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="mainMenu" class="screen">
+        <div class="menu-container">
+            <div class="title-section">
+                <h1 class="game-title">PASS<span class="arrow-accent">→</span>THE<span class="arrow-accent">→</span>PROBLEM</h1>
+                <p class="tagline">YOUR CARD. YOUR PROBLEM.</p>
+            </div>
+            
+            <div class="cards-display">
+                <div class="card card-1">K♠</div>
+                <div class="card card-2">Q♥</div>
+                <div class="card card-3">J♣</div>
+                <div class="card card-4">A♦</div>
+            </div>
+            
+            <div class="menu-buttons">
+                <button id="playBtn" class="btn btn-play">▶ PLAY</button>
+                <button id="settingsBtn" class="btn btn-settings">⚙ SETTINGS</button>
+            </div>
+            
+            <p class="tagline-bottom">"Same Deck. Different Problems."</p>
+        </div>
+    </div>
+
+    <div id="gameScreen" class="screen hidden">
+        <div class="game-container">
+            <!-- Dealer Indicator -->
+            <div class="dealer-indicator"></div>
+            
+            <!-- Players Display (4 positions around table) -->
+            <div class="table-wrapper">
+                <div class="players-layout">
+                    <div class="player-position player-top" data-position="0">
+                        <div class="player-info">
+                            <div class="player-name"></div>
+                            <div class="player-hearts"></div>
+                        </div>
+                        <div class="player-card"></div>
+                    </div>
+                    
+                    <div class="player-position player-left" data-position="1">
+                        <div class="player-info">
+                            <div class="player-name"></div>
+                            <div class="player-hearts"></div>
+                        </div>
+                        <div class="player-card"></div>
+                    </div>
+                    
+                    <div class="player-position player-bottom" data-position="2">
+                        <div class="player-info">
+                            <div class="player-name">YOU</div>
+                            <div class="player-hearts"></div>
+                        </div>
+                        <div class="player-card">
+                            <div class="your-card" id="yourCard"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="player-position player-right" data-position="3">
+                        <div class="player-info">
+                            <div class="player-name"></div>
+                            <div class="player-hearts"></div>
+                        </div>
+                        <div class="player-card"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Current Turn Indicator -->
+            <div class="turn-indicator" id="turnIndicator"></div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button id="keepBtn" class="btn btn-action btn-keep" disabled>
+                    <span class="btn-icon">📌</span>
+                    <span class="btn-text">STAY</span>
+                    <span class="btn-desc">Keep your current card</span>
+                </button>
+                <button id="tradeBtn" class="btn btn-action btn-trade" disabled>
+                    <span class="btn-icon">⇄</span>
+                    <span class="btn-text">TRADE</span>
+                    <span class="btn-desc">Trade with player to your left</span>
+                </button>
+            </div>
+            
+            <!-- Message Display -->
+            <div class="message-box" id="messageBox"></div>
+        </div>
+    </div>
+
+    <div id="resultScreen" class="screen hidden">
+        <div class="result-container">
+            <div class="result-content">
+                <h2 id="resultTitle" class="result-title"></h2>
+                <div class="result-cards" id="resultCards"></div>
+                <button id="nextRoundBtn" class="btn btn-play">▶ NEXT ROUND</button>
+                <button id="mainMenuBtn" class="btn btn-settings">← MAIN MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsScreen" class="screen hidden">
+        <div class="settings-container">
+            <h2>SETTINGS</h2>
+            <div class="settings-group">
+                <label>Number of Players:</label>
+                <select id="playerCount">
+                    <option value="3">3 Players</option>
+                    <option value="4" selected>4 Players</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label>Master Volume:</label>
+                <input type="range" id="volumeSlider" min="0" max="100" value="100">
+            </div>
+            <button id="backBtn" class="btn btn-settings">← BACK</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
